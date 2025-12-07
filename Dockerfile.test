@@ -1,6 +1,15 @@
-FROM mcr.microsoft.com/playwright/python:v1.40.0-jammy
+# ИСПОЛЬЗУЕМ ВЕРСИЮ 1.56.0 (Как просит ошибка в логе)
+FROM mcr.microsoft.com/playwright/python:v1.56.0-jammy
+
 WORKDIR /app
+
+# Копируем тесты
 COPY e2e_tests/ ./e2e_tests/
-RUN pip install pytest pytest-playwright
+
+# Устанавливаем зависимости.
+# Мы явно указываем версию playwright, чтобы она совпадала с образом.
+# Это предотвратит попытку скачать новые браузеры (сэкономит время и исправит ошибку).
+RUN pip install pytest==7.4.0 pytest-playwright==0.4.3 playwright==1.56.0
+
 # Запуск тестов
 CMD ["pytest", "e2e_tests/test_frontend.py"]
