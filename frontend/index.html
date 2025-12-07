@@ -2,55 +2,102 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Ore Mining Dashboard</title>
+    <title>Full Ore Mining Dashboard</title>
     <style>
-        body { font-family: Arial, sans-serif; padding: 20px; background: #f0f2f5; }
-        .card { background: white; padding: 20px; margin: 20px 0; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        img { max-width: 100%; height: auto; }
-        h1 { color: #2c3e50; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px; background: #f4f7f6; color: #333; }
+        .container { max-width: 1100px; margin: 0 auto; }
+        .card { background: white; padding: 25px; margin-bottom: 30px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        h1 { text-align: center; color: #2c3e50; margin-bottom: 40px; }
+        h2 { border-bottom: 2px solid #eee; padding-bottom: 10px; margin-top: 0; }
+        img { max-width: 100%; height: auto; border-radius: 5px; margin-top: 15px; }
+        
+        /* Таблица */
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background-color: #f8f9fa; }
+        tr:hover { background-color: #f5f5f5; }
+        
+        .loading { color: #888; font-style: italic; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        @media (max-width: 768px) { .grid { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
-    <h1>📊 Отчет по классификации руды</h1>
+    <div class="container">
+        <h1>⛏️ Отчет анализа руды (Data Science)</h1>
+        
+        <!-- Блок 1: Классификация -->
+        <div class="card" id="classification-card">
+            <h2>1. Сравнение моделей классификации</h2>
+            <div id="class-results" class="loading">Загрузка данных...</div>
+        </div>
 
-    <div class="card" id="metrics">
-        <h2>Метрики модели</h2>
-        <p>Загрузка данных...</p>
-    </div>
+        <div class="grid">
+            <!-- Блок 2: Корреляция -->
+            <div class="card">
+                <h2>2. Матрица корреляции</h2>
+                <img id="img-corr" src="" alt="Ожидание данных...">
+            </div>
 
-    <div class="card">
-        <h2>Матрица корреляции</h2>
-        <img id="img-corr" src="" alt="Waiting for backend...">
-    </div>
+            <!-- Блок 3: Важность признаков -->
+            <div class="card">
+                <h2>3. Важность признаков</h2>
+                <img id="img-imp" src="" alt="Ожидание данных...">
+            </div>
+        </div>
 
-    <div class="card">
-        <h2>Важность признаков</h2>
-        <img id="img-imp" src="" alt="Waiting for backend...">
+        <div class="grid">
+            <!-- Блок 4: Регрессия -->
+            <div class="card">
+                <h2>4. Регрессия (SiO2)</h2>
+                <div id="reg-results"></div>
+                <img id="img-reg" src="" alt="Ожидание данных...">
+            </div>
+
+            <!-- Блок 5: Кластеризация -->
+            <div class="card">
+                <h2>5. Кластеризация (K-Means)</h2>
+                <p>Разделение руды на 3 кластера</p>
+                <img id="img-clust" src="" alt="Ожидание данных...">
+            </div>
+        </div>
     </div>
 
     <script>
-        // Умное определение адреса:
-        // По умолчанию localhost (для твоего компьютера)
+        // Умный выбор адреса API
         let API = 'http://localhost:5000';
-
-        // Но если сайт открыт по внутреннему имени Docker (project-frontend),
-        // то и бэкенд ищем по его внутреннему имени (project-backend)
         if (window.location.hostname === 'project-frontend') {
             API = 'http://project-backend:5000';
         }
 
-        console.log("Using API:", API);
-
         fetch(API + '/api/data')
             .then(res => res.json())
             .then(data => {
-                document.getElementById('metrics').innerHTML = `<h2>Метрики модели</h2><p>Точность (Accuracy): <b>${data.accuracy}</b></p>`;
+                if(data.error) {
+                    alert("Ошибка на сервере: " + data.error);
+                    return;
+                }
+
+                // 1. Заполняем таблицу классификации
+                let tableHtml = '<table><thead><tr><th>Модель</th><th>Точность (Accuracy)</th></tr></thead><tbody>';
+                for (const [model, acc] of Object.entries(data.classification)) {
+                    tableHtml += `<tr><td>${model}</td><td><b>${acc}</b></td></tr>`;
+                }
+                tableHtml += '</tbody></table>';
+                document.getElementById('class-results').innerHTML = tableHtml;
+
+                // 2. Регрессия
+                document.getElementById('reg-results').innerHTML = `<p>R2 Score: <b>${data.regression_r2}</b></p>`;
+
+                // 3. Картинки
                 document.getElementById('img-corr').src = API + '/static/correlation.png';
                 document.getElementById('img-imp').src = API + '/static/importance.png';
+                document.getElementById('img-reg').src = API + '/static/regression.png';
+                document.getElementById('img-clust').src = API + '/static/clustering.png';
             })
             .catch(e => {
                 console.error(e);
-                document.getElementById('metrics').innerHTML = "<p style='color:red'>Ошибка связи с Бэкендом. Сервер еще обучается...</p>";
+                document.getElementById('class-results').innerHTML = "<p style='color:red'>Сервер обучается. Пожалуйста, обновите страницу через минуту.</p>";
             });
     </script>
 </body>
