@@ -29,8 +29,17 @@
     </div>
 
     <script>
-        // Бэкенд будет доступен на localhost:5000
-        const API = 'http://localhost:5000';
+        // Умное определение адреса:
+        // По умолчанию localhost (для твоего компьютера)
+        let API = 'http://localhost:5000';
+
+        // Но если сайт открыт по внутреннему имени Docker (project-frontend),
+        // то и бэкенд ищем по его внутреннему имени (project-backend)
+        if (window.location.hostname === 'project-frontend') {
+            API = 'http://project-backend:5000';
+        }
+
+        console.log("Using API:", API);
 
         fetch(API + '/api/data')
             .then(res => res.json())
@@ -40,6 +49,7 @@
                 document.getElementById('img-imp').src = API + '/static/importance.png';
             })
             .catch(e => {
+                console.error(e);
                 document.getElementById('metrics').innerHTML = "<p style='color:red'>Ошибка связи с Бэкендом. Сервер еще обучается...</p>";
             });
     </script>
