@@ -1,0 +1,6 @@
+FROM mcr.microsoft.com/playwright/python:v1.40.0-jammy
+WORKDIR /app
+COPY e2e_tests/ ./e2e_tests/
+RUN pip install pytest pytest-playwright
+# Запуск тестов
+CMD ["pytest", "e2e_tests/test_frontend.py"]

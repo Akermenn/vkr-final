@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Ore Mining Dashboard</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #f0f2f5; }
+        .card { background: white; padding: 20px; margin: 20px 0; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        img { max-width: 100%; height: auto; }
+        h1 { color: #2c3e50; }
+    </style>
+</head>
+<body>
+    <h1>📊 Отчет по классификации руды</h1>
+
+    <div class="card" id="metrics">
+        <h2>Метрики модели</h2>
+        <p>Загрузка данных...</p>
+    </div>
+
+    <div class="card">
+        <h2>Матрица корреляции</h2>
+        <img id="img-corr" src="" alt="Waiting for backend...">
+    </div>
+
+    <div class="card">
+        <h2>Важность признаков</h2>
+        <img id="img-imp" src="" alt="Waiting for backend...">
+    </div>
+
+    <script>
+        // Бэкенд будет доступен на localhost:5000
+        const API = 'http://localhost:5000';
+
+        fetch(API + '/api/data')
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('metrics').innerHTML = `<h2>Метрики модели</h2><p>Точность (Accuracy): <b>${data.accuracy}</b></p>`;
+                document.getElementById('img-corr').src = API + '/static/correlation.png';
+                document.getElementById('img-imp').src = API + '/static/importance.png';
+            })
+            .catch(e => {
+                document.getElementById('metrics').innerHTML = "<p style='color:red'>Ошибка связи с Бэкендом. Сервер еще обучается...</p>";
+            });
+    </script>
+</body>
+</html>
